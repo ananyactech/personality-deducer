@@ -1,0 +1,23 @@
+# Room codes that unlock the backstory page (shown on the final "Thank you"
+# screen of the results page). Announce ONE word to the whole room.
+# Not case-sensitive. Lines starting with # are ignored. Add or delete any time.
+BEACH
+BRIDGE
+CANDLE
+COFFEE
+FOREST
+FLOWER
+HONEY
+JACKET
+KITTEN
+MAPLE
+MIRROR
+PARROT
+PILLOW
+PUZZLE
+RAINBOW
+SILVER
+SNOW
+TOMATO
+TRAIN
+TURTLE

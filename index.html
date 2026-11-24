@@ -69,28 +69,29 @@ async function post(payload){
     try{await fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:h,body});return true;}catch(e2){return false;}
   }
 }
-let CODES=null;
+const LISTS={};
 async function codeIsValid(v,url){
-  if(!CODES){
+  if(!LISTS[url]){
     const r=await fetch(url,{cache:"no-store"}); if(!r.ok)throw new Error("codes");
-    CODES=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
+    LISTS[url]=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
   }
-  return CODES.has(String(v).trim().toUpperCase());
+  return LISTS[url].has(String(v).trim().toUpperCase());
 }
 
 const steps=[{t:"welcome"},{t:"code"},{t:"instr"}];
 SECTIONS.forEach(s=>s.items.forEach(([n,text])=>steps.push({t:"item",key:s.id+n+" "+text,sec:s,text})));
-steps.push({t:"email"},{t:"done"});
+steps.push({t:"done"});
 const TOTAL=steps.filter(s=>s.t==="item").length;
 const LS="pd_state_v2";
-let state={i:0,answers:{},code:"",email:""};
-try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s&&s.i<steps.length-1)state=s;}catch(e){}
+let state={i:0,answers:{},code:"",submitted:false};
+try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s&&s.i<steps.length)state=s;}catch(e){}
+let sending=false;
 function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
 let locked=false;
 
 function render(){
   const s=steps[state.i], app=$("#app");
-  $("#back").hidden=!(s.t==="item"||s.t==="email"||s.t==="instr");
+  $("#back").hidden=!(s.t==="item"||s.t==="instr");
   setBar(Object.keys(state.answers).length/TOTAL);
   if(s.t==="welcome"){
     app.innerHTML=`<div class="screen"><span class="pill">AI-powered personality questionnaire</span><h1>Personality Deducer</h1>
@@ -114,15 +115,18 @@ function render(){
     app.innerHTML=`<div class="screen"><p class="label">${s.sec.id}. ${s.sec.header}</p><h2 class="q">${s.text}</h2>
     <div class="choices">${[["Yes","Y"],["U","U"],["No","N"]].map(([v,k])=>`<button class="choice${a===v?" sel":""}" data-v="${v}"><span class="key">${k}</span>${v}</button>`).join("")}</div></div>`;
     app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
-  }else if(s.t==="email"){
-    app.innerHTML=`<div class="screen"><p class="label">Last step</p><h2 class="q">Where should we send your results?</h2>
-    <input type="email" id="em" placeholder="name@example.com" autocomplete="email" value="${state.email||""}">
+  }else if(!state.submitted){
+    app.innerHTML=`<div class="screen"><h1>Submitting your answers&hellip;</h1>
     <div class="err" id="err"></div>
-    <div class="row"><button class="btn" id="go">Submit</button><span class="hint">press Enter</span></div></div>`;
-    $("#go").onclick=submit; setTimeout(()=>$("#em").focus(),50);
+    <div class="row"><button class="btn" id="go" hidden>Try again</button></div></div>`;
+    $("#go").onclick=submit; submit();
   }else{
     app.innerHTML=`<div class="screen"><h1>Thank you.</h1>
-    <p class="sub">Our AI is analyzing your answers. Your personality profile will be sent to you shortly.</p></div>`;
+    <p class="sub">Our AI is analyzing your answers. When everyone is finished, you'll be given a code to unlock your personality profile.</p>
+    <input type="text" id="rc" placeholder="Results code" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <div class="err" id="err"></div>
+    <div class="row"><button class="btn" id="go">See my results</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=unlock; setTimeout(()=>$("#rc").focus(),50);
   }
 }
 function next(){if(state.i<steps.length-1){state.i++;save();render();window.scrollTo(0,0);}}
@@ -144,18 +148,28 @@ function choose(v){
   setTimeout(()=>{locked=false;next();},180);
 }
 async function submit(){
-  const em=$("#em"); if(!em.checkValidity()||!em.value.trim()){$("#err").textContent="Please enter a valid email address.";return;}
-  state.email=em.value.trim(); $("#go").disabled=true; $("#go").textContent="Submitting\u2026";
-  const payload=Object.assign({type:"questionnaire",code:state.code,condition:CONFIG.CONDITION,email:state.email,questionnaire_submitted_at:new Date().toISOString()},state.answers);
-  const ok=await post(payload);
-  if(!ok){$("#go").disabled=false;$("#go").textContent="Submit";$("#err").textContent="Something went wrong. Please try again.";return;}
-  state.i=steps.length-1; render();
-  try{localStorage.removeItem(LS);}catch(e){}
+  if(sending)return; sending=true; $("#go").hidden=true; $("#err").textContent="";
+  const payload=Object.assign({type:"questionnaire",code:state.code,condition:CONFIG.CONDITION,email:"",questionnaire_submitted_at:new Date().toISOString()},state.answers);
+  const ok=await post(payload); sending=false;
+  if(!ok){$("#go").hidden=false;$("#err").textContent="Something went wrong. Please check your connection and try again.";return;}
+  state.submitted=true; save(); render();
+}
+async function unlock(){
+  const v=$("#rc").value.trim().toUpperCase(); if(!v){$("#err").textContent="Please enter the results code.";return;}
+  $("#go").disabled=true;
+  try{
+    if(await codeIsValid(v,"results-codes.txt")){
+      try{localStorage.removeItem(LS);}catch(e){}
+      location.href="results/?code="+encodeURIComponent(state.code); return;
+    }
+    $("#err").textContent="That code isn't valid. Wait for the code to be announced, then try again.";
+  }catch(e){$("#err").textContent="Couldn't check the code. Please check your connection and try again.";}
+  $("#go").disabled=false;
 }
 document.addEventListener("keydown",e=>{
   const s=steps[state.i]; if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(s.t==="item"){const m={y:"Yes",u:"U",n:"No"}[e.key.toLowerCase()];if(m)choose(m);if(e.key==="ArrowLeft")back();}
-  else if(e.key==="Enter"){if(s.t==="email")submit();else if(s.t==="code")submitCode();else if(s.t==="welcome"||s.t==="instr")next();}
+  else if(e.key==="Enter"){if(s.t==="done"&&state.submitted)unlock();else if(s.t==="code")submitCode();else if(s.t==="welcome"||s.t==="instr")next();}
 });
 $("#back").onclick=back;
 render();

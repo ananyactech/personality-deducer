@@ -1,0 +1,23 @@
+# Room codes that unlock the results page (shown on the "Thank you" screen
+# after the questionnaire). Announce ONE word to the whole room.
+# Not case-sensitive. Lines starting with # are ignored. Add or delete any time.
+APPLE
+BANANA
+CHAIR
+CLOUD
+DOOR
+GARDEN
+GUITAR
+HOUSE
+LEMON
+MOON
+OCEAN
+ORANGE
+PENCIL
+PIANO
+RIVER
+ROCKET
+SUNNY
+TABLE
+TIGER
+WINDOW

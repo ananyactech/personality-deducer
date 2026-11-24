@@ -64,13 +64,13 @@ async function post(payload){
     try{await fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:h,body});return true;}catch(e2){return false;}
   }
 }
-let CODES=null;
+const LISTS={};
 async function codeIsValid(v,url){
-  if(!CODES){
+  if(!LISTS[url]){
     const r=await fetch(url,{cache:"no-store"}); if(!r.ok)throw new Error("codes");
-    CODES=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
+    LISTS[url]=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
   }
-  return CODES.has(String(v).trim().toUpperCase());
+  return LISTS[url].has(String(v).trim().toUpperCase());
 }
 
 const steps=[{t:"open"},{t:"sketch"},{t:"rateA"},{t:"rateB"}];
@@ -113,7 +113,12 @@ function render(){
     <p class="small">Use ? if you cannot tell.</p></div>`;
     app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
   }else{
-    app.innerHTML=`<div class="screen"><h1>Thank you.</h1></div>`;
+    app.innerHTML=`<div class="screen"><h1>Thank you.</h1>
+    <p class="sub">Your responses have been recorded. When everyone is finished, you'll be given one last code to learn what this study was really about.</p>
+    <input type="text" id="bc" placeholder="Backstory code" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <div class="err" id="err"></div>
+    <div class="row"><button class="btn" id="go">See the backstory</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=toBackstory; setTimeout(()=>$("#bc").focus(),50);
   }
 }
 function next(){if(state.i<steps.length-1){state.i++;render();window.scrollTo(0,0);}}
@@ -127,6 +132,15 @@ async function openIt(){
     state.code="";state.msg="That code isn't valid. Please check the code you were given.";
   }catch(e){state.msg="Couldn't check your code. Please check your connection and try again.";}
   render();
+}
+async function toBackstory(){
+  const v=$("#bc").value.trim().toUpperCase(); if(!v){$("#err").textContent="Please enter the backstory code.";return;}
+  $("#go").disabled=true;
+  try{
+    if(await codeIsValid(v,"../backstory-codes.txt")){location.href="../backstory/";return;}
+    $("#err").textContent="That code isn't valid. Wait for the code to be announced, then try again.";
+  }catch(e){$("#err").textContent="Couldn't check the code. Please check your connection and try again.";}
+  $("#go").disabled=false;
 }
 function choose(v){
   if(locked)return; locked=true;
@@ -146,6 +160,7 @@ function choose(v){
 document.addEventListener("keydown",e=>{
   const s=steps[state.i]; if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(s.t==="open"&&e.key==="Enter")openIt();
+  else if(s.t==="done"&&e.key==="Enter")toBackstory();
   else if(s.t==="sketch"&&e.key==="Enter")next();
   else if(s.t==="rateA"||s.t==="rateB"){if(/^[0-5]$/.test(e.key))choose(+e.key);}
   else if(s.t==="tf"){const m={t:"true",f:"false","?":"unsure","/":"unsure"}[e.key.toLowerCase()];if(m)choose(m);}

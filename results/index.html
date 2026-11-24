@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Personality Deducer</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#f7f5f0;color:#161616;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+#bar{position:fixed;top:0;left:0;right:0;height:4px;background:#e4e0d7;z-index:5}
+#fill{height:100%;width:0;background:#161616;transition:width .25s ease}
+.wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:72px 28px 96px}
+.screen{width:100%;max-width:760px;margin:0 auto;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.label{font-size:16px;color:#6b6b66;margin:0 0 18px;line-height:1.4}
+h1{font-size:clamp(36px,7vw,68px);font-weight:600;line-height:1.05;letter-spacing:-.025em;margin:0 0 24px}
+.sub{font-size:clamp(18px,2.4vw,22px);line-height:1.55;color:#3d3d3a;margin:0 0 20px;max-width:660px}
+.q{font-size:clamp(32px,6.5vw,60px);font-weight:600;line-height:1.1;letter-spacing:-.02em;margin:0 0 40px}
+.choices{display:flex;gap:12px;flex-wrap:wrap}
+.choice{display:flex;align-items:center;gap:14px;font:inherit;font-size:22px;padding:16px 24px;min-width:140px;background:#fff;color:#161616;border:1.5px solid #161616;border-radius:6px;cursor:pointer}
+.choice:hover{background:#ece9e1}
+.choice.sel{background:#161616;color:#fff}
+.key{font-size:13px;border:1px solid currentColor;border-radius:3px;padding:1px 6px;opacity:.7}
+.btn{font:inherit;font-size:20px;padding:14px 30px;background:#161616;color:#fff;border:0;border-radius:6px;cursor:pointer}
+.btn:hover{background:#333}
+.hint{font-size:14px;color:#6b6b66;margin-left:14px}
+.row{display:flex;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
+#back{position:fixed;left:18px;bottom:16px;background:none;border:0;font:inherit;font-size:16px;color:#6b6b66;cursor:pointer;padding:8px}
+#back:hover{color:#161616}
+input[type=email],input[type=text]{width:100%;max-width:560px;font:inherit;font-size:28px;padding:10px 0;border:0;border-bottom:2px solid #161616;background:transparent;outline:none;color:#161616}
+.err{color:#a3261c;font-size:16px;margin-top:14px;min-height:20px}
+.small{font-size:14px;color:#6b6b66;margin-top:24px;max-width:560px;line-height:1.5}
+ol.stm{padding:0;margin:0 0 8px;list-style:none;counter-reset:s}
+ol.stm li{counter-increment:s;font-size:clamp(19px,2.6vw,24px);line-height:1.45;padding:14px 0 14px 44px;border-top:1px solid #dcd8cf;position:relative}
+ol.stm li:last-child{border-bottom:1px solid #dcd8cf}
+ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6b66}
+.scale{display:flex;gap:10px;flex-wrap:wrap}
+.scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
+.ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
+.pill{display:inline-block;font-size:14px;border:1px solid #161616;border-radius:99px;padding:3px 12px;margin-bottom:22px}
+@media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
+</style>
+</head>
+<body>
+<div id="bar"><div id="fill"></div></div>
+<main id="app" class="wrap"></main>
+<button id="back" type="button" hidden>&larr; Back</button>
+<script src="../config.js"></script>
+<script>
+const STATEMENTS=["You have a great need for other people to like and admire you.", "You have a tendency to be critical of yourself.", "You have a great deal of unused capacity which you have not turned to your advantage.", "While you have some personality weaknesses, you are generally able to compensate for them.", "Your sexual adjustment has presented problems for you.", "Disciplined and self-controlled outside, you tend to be worrisome and insecure inside.", "At times you have serious doubts as to whether you have made the right decision or done the right thing.", "You prefer a certain amount of change and variety and become dissatisfied when hemmed in by restrictions and limitations.", "You pride yourself as an independent thinker and do not accept others' statements without satisfactory proof.", "You have found it unwise to be too frank in revealing yourself to others.", "At times you are extroverted, affable, sociable, while at other times you are introverted, wary, reserved.", "Some of your aspirations tend to be pretty unrealistic.", "Security is one of your major goals in life."];
+
+const $=s=>document.querySelector(s);
+function setBar(p){$("#fill").style.width=Math.max(0,Math.min(100,p*100))+"%";}
+async function post(payload){
+  if(!CONFIG.ENDPOINT||CONFIG.ENDPOINT.indexOf("PASTE_")>-1){console.warn("No ENDPOINT set in config.js - nothing was sent:",payload);return true;}
+  const body=JSON.stringify(payload), h={"Content-Type":"text/plain;charset=utf-8"};
+  try{
+    const r=await fetch(CONFIG.ENDPOINT,{method:"POST",headers:h,body});
+    const j=await r.json(); return j.ok===true;
+  }catch(e){
+    // Some browsers block reading Google's reply. Re-sending is safe: the sheet keeps one row per code.
+    try{await fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:h,body});return true;}catch(e2){return false;}
+  }
+}
+let CODES=null;
+async function codeIsValid(v,url){
+  if(!CODES){
+    const r=await fetch(url,{cache:"no-store"}); if(!r.ok)throw new Error("codes");
+    CODES=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
+  }
+  return CODES.has(String(v).trim().toUpperCase());
+}
+
+const steps=[{t:"open"},{t:"sketch"},{t:"rateA"},{t:"rateB"}];
+STATEMENTS.forEach((x,k)=>steps.push({t:"tf",n:k+1,text:x}));
+steps.push({t:"done"});
+const FIRST_BACK=2; // no going back to the statements
+const params=new URLSearchParams(location.search);
+let state={i:0,code:(params.get("code")||"").trim().toUpperCase(),A:null,B:null,tf:{},msg:""};
+let locked=false;
+
+function render(){
+  const s=steps[state.i], app=$("#app");
+  $("#back").hidden=!(state.i>FIRST_BACK&&s.t!=="done");
+  setBar(state.i/(steps.length-1));
+  if(s.t==="open"){
+    app.innerHTML=`<div class="screen"><span class="pill">AI-powered</span><h1>Your personality profile is ready.</h1>
+    <p class="sub">Our AI analyzed your questionnaire answers and wrote a profile just for you.</p>
+    ${state.code?"":`<input type="text" id="cd" placeholder="Access code" autocomplete="off" autocapitalize="characters" spellcheck="false">`}
+    <div class="err" id="err">${state.msg}</div>
+    <div class="row"><button class="btn" id="go">Open</button></div></div>`;
+    $("#go").onclick=openIt;
+    if(!state.code)setTimeout(()=>$("#cd").focus(),50);
+  }else if(s.t==="sketch"){
+    app.innerHTML=`<div class="screen"><p class="label">AI-generated analysis</p><h1>Your personality profile</h1>
+    <ol class="stm">${STATEMENTS.map(x=>`<li>${x}</li>`).join("")}</ol>
+    <div class="row"><button class="btn" id="go">Continue</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=next;
+  }else if(s.t==="rateA"||s.t==="rateB"){
+    const A=s.t==="rateA", cur=state[A?"A":"B"];
+    app.innerHTML=`<div class="screen"><p class="label">Rating ${A?"1":"2"} of 2</p>
+    <h2 class="q" style="font-size:clamp(26px,4.6vw,42px)">${A?"Rate on a scale of zero (poor) to five (perfect) how effective this questionnaire is in revealing personality.":"Rate on a scale of zero to five the degree to which the personality description reveals basic characteristics of your personality."}</h2>
+    <div class="scale">${[0,1,2,3,4,5].map(n=>`<button class="choice${cur===n?" sel":""}" data-v="${n}">${n}</button>`).join("")}</div>
+    <div class="ends"><span>0 (poor)</span><span>5 (perfect)</span></div></div>`;
+    app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(+b.dataset.v));
+  }else if(s.t==="tf"){
+    const cur=state.tf[s.n];
+    app.innerHTML=`<div class="screen"><p class="label">Statement ${s.n} of ${STATEMENTS.length}. Is this true about you?</p>
+    <h2 class="q" style="font-size:clamp(26px,4.6vw,42px)">${s.text}</h2>
+    <div class="choices">${[["True","T","true"],["False","F","false"],["?","?","unsure"]].map(([l,k,v])=>`<button class="choice${cur===v?" sel":""}" data-v="${v}"><span class="key">${k}</span>${l}</button>`).join("")}</div>
+    <p class="small">Use ? if you cannot tell.</p></div>`;
+    app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
+  }else{
+    app.innerHTML=`<div class="screen"><h1>Thank you.</h1></div>`;
+  }
+}
+function next(){if(state.i<steps.length-1){state.i++;render();window.scrollTo(0,0);}}
+function back(){if(state.i>FIRST_BACK){state.i--;render();}}
+async function openIt(){
+  const v=(state.code||($("#cd")?$("#cd").value:"")).trim().toUpperCase();
+  if(!v){state.msg="Please enter your access code.";render();return;}
+  $("#go").disabled=true;
+  try{
+    if(await codeIsValid(v,"../codes.txt")){state.code=v;state.msg="";next();return;}
+    state.code="";state.msg="That code isn't valid. Please check the code you were given.";
+  }catch(e){state.msg="Couldn't check your code. Please check your connection and try again.";}
+  render();
+}
+function choose(v){
+  if(locked)return; locked=true;
+  const s=steps[state.i];
+  if(s.t==="rateA")state.A=v; else if(s.t==="rateB")state.B=v; else state.tf[s.n]=v;
+  document.querySelectorAll(".choice").forEach(b=>b.classList.toggle("sel",b.dataset.v===String(v)));
+  setTimeout(async()=>{
+    locked=false;
+    if(s.t==="tf"&&s.n===STATEMENTS.length){
+      const payload={type:"ratings",code:state.code,condition:CONFIG.CONDITION,rating_test:state.A,rating_profile:state.B,ratings_submitted_at:new Date().toISOString()};
+      for(const k in state.tf)payload["S"+k]=state.tf[k];
+      if(!(await post(payload))){alert("Something went wrong submitting. Please try again.");return;}
+    }
+    next();
+  },180);
+}
+document.addEventListener("keydown",e=>{
+  const s=steps[state.i]; if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(s.t==="open"&&e.key==="Enter")openIt();
+  else if(s.t==="sketch"&&e.key==="Enter")next();
+  else if(s.t==="rateA"||s.t==="rateB"){if(/^[0-5]$/.test(e.key))choose(+e.key);}
+  else if(s.t==="tf"){const m={t:"true",f:"false","?":"unsure","/":"unsure"}[e.key.toLowerCase()];if(m)choose(m);}
+  if(e.key==="ArrowLeft"&&(s.t==="rateA"||s.t==="rateB"||s.t==="tf"))back();
+});
+$("#back").onclick=back;
+render();
+</script>
+</body>
+</html>

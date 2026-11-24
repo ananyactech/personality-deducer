@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Backstory | Personality Deducer</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#f7f5f0;color:#161616;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+#bar{position:fixed;top:0;left:0;right:0;height:4px;background:#e4e0d7;z-index:5}
+#fill{height:100%;width:0;background:#161616;transition:width .25s ease}
+.wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:72px 28px 96px}
+.screen{width:100%;max-width:760px;margin:0 auto;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.label{font-size:16px;color:#6b6b66;margin:0 0 18px;line-height:1.4}
+h1{font-size:clamp(36px,7vw,68px);font-weight:600;line-height:1.05;letter-spacing:-.025em;margin:0 0 24px}
+.sub{font-size:clamp(18px,2.4vw,22px);line-height:1.55;color:#3d3d3a;margin:0 0 20px;max-width:660px}
+.q{font-size:clamp(32px,6.5vw,60px);font-weight:600;line-height:1.1;letter-spacing:-.02em;margin:0 0 40px}
+.choices{display:flex;gap:12px;flex-wrap:wrap}
+.choice{display:flex;align-items:center;gap:14px;font:inherit;font-size:22px;padding:16px 24px;min-width:140px;background:#fff;color:#161616;border:1.5px solid #161616;border-radius:6px;cursor:pointer}
+.choice:hover{background:#ece9e1}
+.choice.sel{background:#161616;color:#fff}
+.key{font-size:13px;border:1px solid currentColor;border-radius:3px;padding:1px 6px;opacity:.7}
+.btn{font:inherit;font-size:20px;padding:14px 30px;background:#161616;color:#fff;border:0;border-radius:6px;cursor:pointer}
+.btn:hover{background:#333}
+.hint{font-size:14px;color:#6b6b66;margin-left:14px}
+.row{display:flex;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
+#back{position:fixed;left:18px;bottom:16px;background:none;border:0;font:inherit;font-size:16px;color:#6b6b66;cursor:pointer;padding:8px}
+#back:hover{color:#161616}
+input[type=email],input[type=text]{width:100%;max-width:560px;font:inherit;font-size:28px;padding:10px 0;border:0;border-bottom:2px solid #161616;background:transparent;outline:none;color:#161616}
+.err{color:#a3261c;font-size:16px;margin-top:14px;min-height:20px}
+.small{font-size:14px;color:#6b6b66;margin-top:24px;max-width:560px;line-height:1.5}
+ol.stm{padding:0;margin:0 0 8px;list-style:none;counter-reset:s}
+ol.stm li{counter-increment:s;font-size:clamp(19px,2.6vw,24px);line-height:1.45;padding:14px 0 14px 44px;border-top:1px solid #dcd8cf;position:relative}
+ol.stm li:last-child{border-bottom:1px solid #dcd8cf}
+ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6b66}
+.scale{display:flex;gap:10px;flex-wrap:wrap}
+.scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
+.ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
+.pill{display:inline-block;font-size:14px;border:1px solid #161616;border-radius:99px;padding:3px 12px;margin-bottom:22px}
+@media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
+
+.story h2{font-size:clamp(20px,2.6vw,26px);font-weight:600;margin:38px 0 10px;letter-spacing:-.01em}
+.story p{font-size:clamp(18px,2.2vw,21px);line-height:1.6;color:#2b2b28;margin:0 0 16px;max-width:680px}
+.story .ref{font-size:15px;color:#6b6b66;line-height:1.5}
+</style>
+</head>
+<body>
+<main class="wrap"><div class="screen story">
+<h1>Backstory</h1>
+<p>Thank you for taking part in Personality Deducer. Here is what it was really about.</p>
+
+<h2>What you were told</h2>
+<p>You were told that an AI analyzed your questionnaire answers and wrote a personal profile for you. That was not true. The 13 statements you saw were identical for every participant, and nothing analyzed your answers.</p>
+
+<h2>Where the idea comes from</h2>
+<p>In 1948, psychologist Bertram Forer published a personality questionnaire called the Diagnostic Interest Blank. In 1949 he had 39 students in his introductory psychology class fill it out. A week later he handed each student a &ldquo;personal&rdquo; personality sketch. All 39 sketches were the same: 13 statements taken largely from a newsstand astrology book.</p>
+<p>Students rated how well the test revealed their personality, and 38 of the 39 gave it a 4 or 5 out of 5. On average they marked 10.2 of the 13 statements as true of themselves. Statements that fit almost everyone felt personal to each reader. This is now often called the Forer effect, or the Barnum effect.</p>
+
+<h2>What our study asks</h2>
+<p>In Forer&rsquo;s classroom, the sketch seemed to come from a psychologist&rsquo;s test. We wanted to know whether people believe the same generic profile just as much, or more, when it is presented as coming from an AI. We compared how people rated the profile when it was presented as coming from an AI versus a psychologist.</p>
+<p>The questionnaire you answered was a shortened version of Forer&rsquo;s, using about 100 of its 279 items with the original wording.</p>
+
+<h2>What we recorded</h2>
+<p>We recorded your answers to the questionnaire, your two ratings, whether you marked each of the 13 statements true, false, or unsure, and your email address, all linked by your access code.</p>
+
+<h2>What your ratings mean</h2>
+<p>Nothing about you personally. If the statements felt accurate, you reacted the way nearly everyone does, and that is exactly the effect the study is about.</p>
+
+<p>Questions about the study? Reply to the email that sent you this link.</p>
+
+<p class="ref">Forer, B. R. (1949). The fallacy of personal validation: A classroom demonstration of gullibility. <i>Journal of Abnormal and Social Psychology, 44</i>(1), 118&ndash;123.<br>
+Forer, B. R. (1948). A diagnostic interest blank. <i>Rorschach Research Exchange and Journal of Projective Techniques, 12</i>(2), 119&ndash;129.</p>
+</div></main>
+</body>
+</html>

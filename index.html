@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Personality Deducer</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#f7f5f0;color:#161616;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+#bar{position:fixed;top:0;left:0;right:0;height:4px;background:#e4e0d7;z-index:5}
+#fill{height:100%;width:0;background:#161616;transition:width .25s ease}
+.wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:72px 28px 96px}
+.screen{width:100%;max-width:760px;margin:0 auto;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.label{font-size:16px;color:#6b6b66;margin:0 0 18px;line-height:1.4}
+h1{font-size:clamp(36px,7vw,68px);font-weight:600;line-height:1.05;letter-spacing:-.025em;margin:0 0 24px}
+.sub{font-size:clamp(18px,2.4vw,22px);line-height:1.55;color:#3d3d3a;margin:0 0 20px;max-width:660px}
+.q{font-size:clamp(32px,6.5vw,60px);font-weight:600;line-height:1.1;letter-spacing:-.02em;margin:0 0 40px}
+.choices{display:flex;gap:12px;flex-wrap:wrap}
+.choice{display:flex;align-items:center;gap:14px;font:inherit;font-size:22px;padding:16px 24px;min-width:140px;background:#fff;color:#161616;border:1.5px solid #161616;border-radius:6px;cursor:pointer}
+.choice:hover{background:#ece9e1}
+.choice.sel{background:#161616;color:#fff}
+.key{font-size:13px;border:1px solid currentColor;border-radius:3px;padding:1px 6px;opacity:.7}
+.btn{font:inherit;font-size:20px;padding:14px 30px;background:#161616;color:#fff;border:0;border-radius:6px;cursor:pointer}
+.btn:hover{background:#333}
+.hint{font-size:14px;color:#6b6b66;margin-left:14px}
+.row{display:flex;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
+#back{position:fixed;left:18px;bottom:16px;background:none;border:0;font:inherit;font-size:16px;color:#6b6b66;cursor:pointer;padding:8px}
+#back:hover{color:#161616}
+input[type=email],input[type=text]{width:100%;max-width:560px;font:inherit;font-size:28px;padding:10px 0;border:0;border-bottom:2px solid #161616;background:transparent;outline:none;color:#161616}
+.err{color:#a3261c;font-size:16px;margin-top:14px;min-height:20px}
+.small{font-size:14px;color:#6b6b66;margin-top:24px;max-width:560px;line-height:1.5}
+ol.stm{padding:0;margin:0 0 8px;list-style:none;counter-reset:s}
+ol.stm li{counter-increment:s;font-size:clamp(19px,2.6vw,24px);line-height:1.45;padding:14px 0 14px 44px;border-top:1px solid #dcd8cf;position:relative}
+ol.stm li:last-child{border-bottom:1px solid #dcd8cf}
+ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6b66}
+.scale{display:flex;gap:10px;flex-wrap:wrap}
+.scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
+.ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
+.pill{display:inline-block;font-size:14px;border:1px solid #161616;border-radius:99px;padding:3px 12px;margin-bottom:22px}
+@media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
+</style>
+</head>
+<body>
+<div id="bar"><div id="fill"></div></div>
+<main id="app" class="wrap"></main>
+<button id="back" type="button" hidden>&larr; Back</button>
+<script src="config.js"></script>
+<script>
+const SECTIONS=[{"id": "A", "header": "Hobbies, sports, and other activities that would interest your ideal person.", "items": [[7, "Go fishing"], [9, "Play golf"], [12, "Duel with swords"], [13, "Ice skate"], [14, "Climb mountains"], [15, "Play ping-pong"], [20, "Play volley ball"], [28, "Advise people"], [31, "Play chess"], [32, "Paint pictures"], [34, "Keep a diary"], [38, "Entertain at home"], [39, "Go to a stag party"], [40, "Play poker"], [44, "Model clay"], [48, "Collect stamps or coins"], [51, "Date girls often"], [56, "Have nails manicured"], [59, "Drink beer with friends"], [60, "Visit jam sessions"], [64, "Save money"], [67, "Be married"], [68, "Prefer simple foods"], [69, "Have children"], [71, "Get massage treatments"], [72, "Be seen in the best spots"], [73, "Sketch pictures"], [75, "Go to political meetings"], [79, "Find foreign cafes"], [80, "Polish shoes regularly"], [81, "Tell jokes"], [85, "Make a parachute jump"]]}, {"id": "B", "header": "Personal characteristics of your ideal person.", "items": [[6, "Very masculine"], [9, "Wears glasses"], [11, "Artistic"], [13, "Famous"], [17, "Non-smoker"], [22, "Serious"], [23, "Seeks others' advice"], [29, "Practical"], [30, "Overlooks others' faults"], [31, "Wealthy"], [34, "Controls his anger"], [37, "Well-educated"], [39, "Carefully-dressed"], [42, "Attractive to women"], [43, "Practical joker"], [49, "Dislikes church"], [51, "Stays in the background"], [52, "Knows many sexy jokes"], [56, "Owns a flashy car"], [59, "Has a smooth line"], [62, "Helps in the home"], [63, "Hides his feelings"], [64, "Ready to take a chance"], [66, "Refuses to admit defeat"], [68, "Uninterested in women"]]}, {"id": "C", "header": "Reading interests of your ideal person.", "items": [[2, "Poetry"], [4, "Love stories"], [5, "Mechanics magazines"], [7, "Sports stories"], [10, "Religious books"], [11, "Comic books"], [14, "Books on self-improvement"], [18, "Astrology, horoscopes"]]}, {"id": "D", "header": "Occupational interests of your ideal person.", "items": [[1, "Write books"], [4, "Operate a machine"], [5, "Supervise others"], [7, "Wait on people"], [9, "Settle arguments"], [11, "Write poetry"], [12, "Manage a retail store"], [17, "Capture criminals"], [19, "Grow flowers"], [23, "Referee sports"], [24, "Sell to the public"], [27, "Work under supervision"], [28, "Work in a fixed locality"], [31, "Have little responsibility"], [33, "Develop original ideas"], [35, "Write reports"], [37, "Routine work"], [40, "Office or desk work"], [44, "Fixed salary"], [49, "Make own decisions"], [54, "Outside work"], [57, "Heavy work"], [61, "Judge people"], [63, "Figure costs and prices"], [71, "Plan procedures"], [74, "Take business risks"]]}, {"id": "E", "header": "Secret hopes and ambitions of your ideal person.", "items": [[1, "Be a hero"], [2, "Win the Irish sweepstakes"], [5, "Marry a movie star"], [9, "Turn lead to gold"], [11, "Become president"], [12, "Be a genius"], [16, "Live forever"], [24, "Be worshipped by savages"], [25, "Relive the same life"]]}];
+const INSTR=[
+ "All of us admire some persons and disapprove of others because of the way they act and the things they do. We have our own ideals of what people should be like. Try to think of the ideal person, the kind of person you would like to be.",
+ "Below are some lists of characteristics: interests, skills, hobbies, habits. Look at each characteristic and decide whether your ideal person would have this characteristic or like this activity. If your ideal person would have this characteristic or like this activity, select the word \u201cYES\u201d at the left. If it is not important whether your ideal person has this characteristic or interest, select the letter \u201cU.\u201d If your ideal person would NOT have this characteristic or like the activity, select the word \u201cNo.\u201d",
+ "Select <i>only one</i> word or letter for each characteristic. Do not skip any characteristics."
+];
+
+const $=s=>document.querySelector(s);
+function setBar(p){$("#fill").style.width=Math.max(0,Math.min(100,p*100))+"%";}
+async function post(payload){
+  if(!CONFIG.ENDPOINT||CONFIG.ENDPOINT.indexOf("PASTE_")>-1){console.warn("No ENDPOINT set in config.js - nothing was sent:",payload);return true;}
+  const body=JSON.stringify(payload), h={"Content-Type":"text/plain;charset=utf-8"};
+  try{
+    const r=await fetch(CONFIG.ENDPOINT,{method:"POST",headers:h,body});
+    const j=await r.json(); return j.ok===true;
+  }catch(e){
+    // Some browsers block reading Google's reply. Re-sending is safe: the sheet keeps one row per code.
+    try{await fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:h,body});return true;}catch(e2){return false;}
+  }
+}
+let CODES=null;
+async function codeIsValid(v,url){
+  if(!CODES){
+    const r=await fetch(url,{cache:"no-store"}); if(!r.ok)throw new Error("codes");
+    CODES=new Set((await r.text()).split(/\r?\n/).map(s=>s.trim().toUpperCase()).filter(s=>s&&s[0]!=="#"));
+  }
+  return CODES.has(String(v).trim().toUpperCase());
+}
+
+const steps=[{t:"welcome"},{t:"code"},{t:"instr"}];
+SECTIONS.forEach(s=>s.items.forEach(([n,text])=>steps.push({t:"item",key:s.id+n+" "+text,sec:s,text})));
+steps.push({t:"email"},{t:"done"});
+const TOTAL=steps.filter(s=>s.t==="item").length;
+const LS="pd_state_v2";
+let state={i:0,answers:{},code:"",email:""};
+try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s&&s.i<steps.length-1)state=s;}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+let locked=false;
+
+function render(){
+  const s=steps[state.i], app=$("#app");
+  $("#back").hidden=!(s.t==="item"||s.t==="email"||s.t==="instr");
+  setBar(Object.keys(state.answers).length/TOTAL);
+  if(s.t==="welcome"){
+    app.innerHTML=`<div class="screen"><span class="pill">AI-powered personality questionnaire</span><h1>Personality Deducer</h1>
+    <p class="sub">Answer a series of quick questions about your ideal person. Our AI analyzes your answers and writes your personal personality profile.</p>
+    <p class="sub">It takes about 5 minutes.</p>
+    <div class="row"><button class="btn" id="go">Start</button><span class="hint">press Enter</span></div>
+    <p class="small">Your responses are recorded for a class research project.</p></div>`;
+    $("#go").onclick=next;
+  }else if(s.t==="code"){
+    app.innerHTML=`<div class="screen"><p class="label">Before we begin</p><h2 class="q">Enter your access code</h2>
+    <input type="text" id="cd" placeholder="Access code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${state.code||""}">
+    <div class="err" id="err"></div>
+    <div class="row"><button class="btn" id="go">Continue</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=submitCode; setTimeout(()=>$("#cd").focus(),50);
+  }else if(s.t==="instr"){
+    app.innerHTML=`<div class="screen"><p class="label">Instructions</p>${INSTR.map(p=>`<p class="sub">${p}</p>`).join("")}
+    <div class="row"><button class="btn" id="go">Continue</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=next;
+  }else if(s.t==="item"){
+    const a=state.answers[s.key];
+    app.innerHTML=`<div class="screen"><p class="label">${s.sec.id}. ${s.sec.header}</p><h2 class="q">${s.text}</h2>
+    <div class="choices">${[["Yes","Y"],["U","U"],["No","N"]].map(([v,k])=>`<button class="choice${a===v?" sel":""}" data-v="${v}"><span class="key">${k}</span>${v}</button>`).join("")}</div></div>`;
+    app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
+  }else if(s.t==="email"){
+    app.innerHTML=`<div class="screen"><p class="label">Last step</p><h2 class="q">Where should we send your results?</h2>
+    <input type="email" id="em" placeholder="name@example.com" autocomplete="email" value="${state.email||""}">
+    <div class="err" id="err"></div>
+    <div class="row"><button class="btn" id="go">Submit</button><span class="hint">press Enter</span></div></div>`;
+    $("#go").onclick=submit; setTimeout(()=>$("#em").focus(),50);
+  }else{
+    app.innerHTML=`<div class="screen"><h1>Thank you.</h1>
+    <p class="sub">Our AI is analyzing your answers. Your personality profile will be sent to you shortly.</p></div>`;
+  }
+}
+function next(){if(state.i<steps.length-1){state.i++;save();render();window.scrollTo(0,0);}}
+function back(){if(state.i>0){state.i--;save();render();}}
+async function submitCode(){
+  const v=$("#cd").value.trim().toUpperCase(); if(!v){$("#err").textContent="Please enter your access code.";return;}
+  $("#go").disabled=true;
+  try{
+    if(await codeIsValid(v,"codes.txt")){state.code=v;next();return;}
+    $("#err").textContent="That code isn't valid. Please check the code you were given.";
+  }catch(e){$("#err").textContent="Couldn't check your code. Please check your connection and try again.";}
+  $("#go").disabled=false;
+}
+function choose(v){
+  if(locked)return; locked=true;
+  const s=steps[state.i]; state.answers[s.key]=v; save();
+  document.querySelectorAll(".choice").forEach(b=>b.classList.toggle("sel",b.dataset.v===v));
+  setBar(Object.keys(state.answers).length/TOTAL);
+  setTimeout(()=>{locked=false;next();},180);
+}
+async function submit(){
+  const em=$("#em"); if(!em.checkValidity()||!em.value.trim()){$("#err").textContent="Please enter a valid email address.";return;}
+  state.email=em.value.trim(); $("#go").disabled=true; $("#go").textContent="Submitting\u2026";
+  const payload=Object.assign({type:"questionnaire",code:state.code,condition:CONFIG.CONDITION,email:state.email,questionnaire_submitted_at:new Date().toISOString()},state.answers);
+  const ok=await post(payload);
+  if(!ok){$("#go").disabled=false;$("#go").textContent="Submit";$("#err").textContent="Something went wrong. Please try again.";return;}
+  state.i=steps.length-1; render();
+  try{localStorage.removeItem(LS);}catch(e){}
+}
+document.addEventListener("keydown",e=>{
+  const s=steps[state.i]; if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(s.t==="item"){const m={y:"Yes",u:"U",n:"No"}[e.key.toLowerCase()];if(m)choose(m);if(e.key==="ArrowLeft")back();}
+  else if(e.key==="Enter"){if(s.t==="email")submit();else if(s.t==="code")submitCode();else if(s.t==="welcome"||s.t==="instr")next();}
+});
+$("#back").onclick=back;
+render();
+</script>
+</body>
+</html>

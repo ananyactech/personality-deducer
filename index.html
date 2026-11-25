@@ -39,7 +39,8 @@ ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6
 .scale{display:flex;gap:10px;flex-wrap:wrap}
 .scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
 .ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
-.tag{font-size:17px;color:#6b6b66;margin:0 0 18px}
+.tag{font-size:clamp(18px,2.6vw,22px);color:#6b6b66;margin:0 0 18px}
+.tag b{color:#161616;font-weight:700;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
 @media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
 
 /* Welcome-screen neural network: forms, pulses, then condenses into a small radial mark */
@@ -82,7 +83,7 @@ function setBar(p){$("#fill").style.width=Math.max(0,Math.min(100,p*100))+"%";}
 /* Builds the animated network: nodes pop in layer by layer, links draw between layers,
    then a pulse of activity keeps travelling left to right into the output node. */
 function netSVG(){
-  const L=[6,4,3,1], X=[36,196,356,516], H=260, STEP=.8;
+  const L=[6,4,3,1], X=[36,196,356,516], H=260, STEP=.5;
   const CX=130, CY=H/2, R=[108,76,44,0], OFF=[-90,-45,-90,0];
   const pos=L.map((n,k)=>Array.from({length:n},(_,i)=>[X[k],n===1?H/2:30+i*(H-60)/(n-1)]));
   let lines="",nodes="",rings="";
@@ -107,7 +108,7 @@ function startNet(){
   clearTimeout(netTimer);
   const svg=$(".net"); if(!svg)return;
   if(matchMedia("(prefers-reduced-motion:reduce)").matches){svg.classList.add("cond");return;}
-  netTimer=setTimeout(()=>svg.classList.add("cond"),7000);
+  netTimer=setTimeout(()=>svg.classList.add("cond"),5000);
 }
 async function post(payload){
   if(!CONFIG.ENDPOINT||CONFIG.ENDPOINT.indexOf("PASTE_")>-1){console.warn("No ENDPOINT set in config.js - nothing was sent:",payload);return true;}
@@ -146,7 +147,7 @@ function render(){
   $("#back").hidden=!(s.t==="item"||s.t==="instr");
   setBar(Object.keys(state.answers).length/TOTAL);
   if(s.t==="welcome"){
-    app.innerHTML=`<div class="screen">${netSVG()}<p class="tag">AI-powered personality questionnaire</p><h1>Personality Deducer</h1>
+    app.innerHTML=`<div class="screen">${netSVG()}<p class="tag"><b>AI-powered</b> personality questionnaire</p><h1>Personality Deducer</h1>
     <p class="sub">Answer a series of quick questions about your ideal person. Our AI analyzes your answers and writes your personal personality profile.</p>
     <p class="sub">It takes about 5 minutes.</p>
     <div class="row"><button class="btn" id="go">Start</button><span class="hint">press Enter</span></div>

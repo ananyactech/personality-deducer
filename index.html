@@ -39,8 +39,28 @@ ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6
 .scale{display:flex;gap:10px;flex-wrap:wrap}
 .scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
 .ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
-.pill{display:inline-block;font-size:14px;border:1px solid #161616;border-radius:99px;padding:3px 12px;margin-bottom:22px}
+.tag{font-size:17px;color:#6b6b66;margin:0 0 18px}
 @media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
+
+/* Welcome-screen neural network: forms, pulses, then condenses into a small radial mark */
+.net{display:block;width:100%;max-width:560px;height:auto;margin:0 0 26px;transition:width 1.4s cubic-bezier(.65,0,.35,1)}
+.net.cond{width:240px}
+.net .ln{fill:none;stroke:#b9b6ac;stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .7s ease forwards}
+.net .nd{fill:#161616;transform-box:fill-box;transform-origin:center;transform:scale(0);animation:pop .45s cubic-bezier(.3,1.5,.5,1) forwards,beat 2.8s ease-in-out infinite}
+.net .mv{transition:transform 1.4s cubic-bezier(.65,0,.35,1)}
+.net .ring{fill:none;stroke:#b9b6ac;stroke-width:2.4;opacity:0}
+.net.cond .mv{transform:translate(var(--tx),var(--ty))}
+.net.cond .ln{opacity:0;transition:opacity .6s}
+.net.cond .nd{animation:none;transform:scale(1.3)}
+.net.cond .ring{opacity:1;transition:opacity .8s .9s}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{to{transform:scale(1)}}
+@keyframes beat{0%,100%{transform:scale(1)}18%{transform:scale(1.35)}36%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){
+  .net,.net .mv,.net.cond .ln,.net.cond .ring{transition:none}
+  .net .ln{animation:none;stroke-dashoffset:0}
+  .net .nd{animation:none;transform:none}
+}
 </style>
 </head>
 <body>
@@ -58,6 +78,37 @@ const INSTR=[
 
 const $=s=>document.querySelector(s);
 function setBar(p){$("#fill").style.width=Math.max(0,Math.min(100,p*100))+"%";}
+
+/* Builds the animated network: nodes pop in layer by layer, links draw between layers,
+   then a pulse of activity keeps travelling left to right into the output node. */
+function netSVG(){
+  const L=[6,4,3,1], X=[36,196,356,516], H=260, STEP=.8;
+  const CX=130, CY=H/2, R=[108,76,44,0], OFF=[-90,-45,-90,0];
+  const pos=L.map((n,k)=>Array.from({length:n},(_,i)=>[X[k],n===1?H/2:30+i*(H-60)/(n-1)]));
+  let lines="",nodes="",rings="";
+  for(let k=0;k<L.length-1;k++){
+    const d=k*STEP+.45;
+    pos[k].forEach(([x1,y1],i)=>pos[k+1].forEach(([x2,y2],j)=>{
+      lines+=`<path class="ln" pathLength="1" d="M${x1} ${y1}L${x2} ${y2}" style="animation-delay:${(d+(i+j)*.04).toFixed(2)}s"/>`;
+    }));
+  }
+  const total=(L.length-1)*STEP+1.4;
+  R.slice(0,3).forEach(r=>rings+=`<circle class="ring" cx="${CX}" cy="${CY}" r="${r}"/>`);
+  pos.forEach((layer,k)=>layer.forEach(([x,y],i)=>{
+    const r=k===L.length-1?18:7, d=(k*STEP+i*.07).toFixed(2), b=(total+k*.35).toFixed(2);
+    const a=(OFF[k]+360*i/layer.length)*Math.PI/180;
+    const tx=(CX+R[k]*Math.cos(a)-x).toFixed(1), ty=(CY+R[k]*Math.sin(a)-y).toFixed(1);
+    nodes+=`<g class="mv" style="--tx:${tx}px;--ty:${ty}px"><circle class="nd" cx="${x}" cy="${y}" r="${r}" style="animation-delay:${d}s,${b}s"/></g>`;
+  }));
+  return `<svg class="net" viewBox="0 0 560 ${H}" role="img" aria-label="Animated neural network that condenses into a small mark">${lines}${rings}${nodes}</svg>`;
+}
+let netTimer;
+function startNet(){
+  clearTimeout(netTimer);
+  const svg=$(".net"); if(!svg)return;
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){svg.classList.add("cond");return;}
+  netTimer=setTimeout(()=>svg.classList.add("cond"),7000);
+}
 async function post(payload){
   if(!CONFIG.ENDPOINT||CONFIG.ENDPOINT.indexOf("PASTE_")>-1){console.warn("No ENDPOINT set in config.js - nothing was sent:",payload);return true;}
   const body=JSON.stringify(payload), h={"Content-Type":"text/plain;charset=utf-8"};
@@ -90,16 +141,17 @@ function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
 let locked=false;
 
 function render(){
+  clearTimeout(netTimer);
   const s=steps[state.i], app=$("#app");
   $("#back").hidden=!(s.t==="item"||s.t==="instr");
   setBar(Object.keys(state.answers).length/TOTAL);
   if(s.t==="welcome"){
-    app.innerHTML=`<div class="screen"><span class="pill">AI-powered personality questionnaire</span><h1>Personality Deducer</h1>
+    app.innerHTML=`<div class="screen">${netSVG()}<p class="tag">AI-powered personality questionnaire</p><h1>Personality Deducer</h1>
     <p class="sub">Answer a series of quick questions about your ideal person. Our AI analyzes your answers and writes your personal personality profile.</p>
     <p class="sub">It takes about 5 minutes.</p>
     <div class="row"><button class="btn" id="go">Start</button><span class="hint">press Enter</span></div>
     <p class="small">Your responses are recorded for a class research project.</p></div>`;
-    $("#go").onclick=next;
+    $("#go").onclick=next; startNet();
   }else if(s.t==="code"){
     app.innerHTML=`<div class="screen"><p class="label">Before we begin</p><h2 class="q">Enter your access code</h2>
     <input type="text" id="cd" placeholder="Access code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${state.code||""}">

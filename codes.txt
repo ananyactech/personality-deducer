@@ -1,7 +1,6 @@
 # Access codes - one per line. Lines starting with # are ignored.
 # Give each participant ONE code. Add or delete lines any time.
-26ZT92
-29DG5Q
+test
 2A9RUE
 2D77GK
 2PY9V9

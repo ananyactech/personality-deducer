@@ -8,42 +8,25 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0}
+[hidden]{display:none!important}
 body{background:#f7f5f0;color:#161616;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-#bar{position:fixed;top:0;left:0;right:0;height:4px;background:#e4e0d7;z-index:5}
+#bar{position:fixed;top:0;left:0;right:0;height:4px;background:#e4e0d7;z-index:6}
 #fill{height:100%;width:0;background:#161616;transition:width .25s ease}
-.wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:72px 28px 96px}
-.screen{width:100%;max-width:760px;margin:0 auto;animation:in .22s ease}
 @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.label{font-size:16px;color:#6b6b66;margin:0 0 18px;line-height:1.4}
 h1{font-size:clamp(36px,7vw,68px);font-weight:600;line-height:1.05;letter-spacing:-.025em;margin:0 0 24px}
 .sub{font-size:clamp(18px,2.4vw,22px);line-height:1.55;color:#3d3d3a;margin:0 0 20px;max-width:660px}
-.q{font-size:clamp(32px,6.5vw,60px);font-weight:600;line-height:1.1;letter-spacing:-.02em;margin:0 0 40px}
-.choices{display:flex;gap:12px;flex-wrap:wrap}
-.choice{display:flex;align-items:center;gap:14px;font:inherit;font-size:22px;padding:16px 24px;min-width:140px;background:#fff;color:#161616;border:1.5px solid #161616;border-radius:6px;cursor:pointer}
-.choice:hover{background:#ece9e1}
-.choice.sel{background:#161616;color:#fff}
-.key{font-size:13px;border:1px solid currentColor;border-radius:3px;padding:1px 6px;opacity:.7}
-.btn{font:inherit;font-size:20px;padding:14px 30px;background:#161616;color:#fff;border:0;border-radius:6px;cursor:pointer}
-.btn:hover{background:#333}
-.hint{font-size:14px;color:#6b6b66;margin-left:14px}
-.row{display:flex;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
-#back{position:fixed;left:18px;bottom:16px;background:none;border:0;font:inherit;font-size:16px;color:#6b6b66;cursor:pointer;padding:8px}
-#back:hover{color:#161616}
-input[type=email],input[type=text]{width:100%;max-width:560px;font:inherit;font-size:28px;padding:10px 0;border:0;border-bottom:2px solid #161616;background:transparent;outline:none;color:#161616}
-.err{color:#a3261c;font-size:16px;margin-top:14px;min-height:20px}
-.small{font-size:14px;color:#6b6b66;margin-top:24px;max-width:560px;line-height:1.5}
-ol.stm{padding:0;margin:0 0 8px;list-style:none;counter-reset:s}
-ol.stm li{counter-increment:s;font-size:clamp(19px,2.6vw,24px);line-height:1.45;padding:14px 0 14px 44px;border-top:1px solid #dcd8cf;position:relative}
-ol.stm li:last-child{border-bottom:1px solid #dcd8cf}
-ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6b66}
-.scale{display:flex;gap:10px;flex-wrap:wrap}
-.scale .choice{min-width:70px;justify-content:center;padding:16px 0;font-size:26px}
-.ends{display:flex;justify-content:space-between;max-width:470px;font-size:15px;color:#6b6b66;margin-top:10px}
 .tag{font-size:clamp(18px,2.6vw,22px);color:#6b6b66;margin:0 0 18px}
 .tag b{color:#161616;font-weight:700;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
-@media(max-width:560px){.choice{width:100%}.scale .choice{width:auto}}
+.btn{font:inherit;font-size:20px;padding:14px 30px;background:#161616;color:#fff;border:0;border-radius:10px;cursor:pointer}
+.btn:hover{background:#333}
+.hint{font-size:14px;color:#6b6b66;margin-left:14px}
+.row{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.small{font-size:14px;color:#6b6b66;margin-top:24px;max-width:560px;line-height:1.5}
+.err{color:#a3261c;font-size:16px;margin-top:10px;min-height:20px}
 
-/* Welcome-screen neural network: forms, pulses, then condenses into a small radial mark */
+/* Welcome screen */
+.wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:72px 28px 96px}
+.screen{width:100%;max-width:760px;margin:0 auto;animation:in .22s ease}
 .net{display:block;width:100%;max-width:560px;height:auto;margin:0 0 26px;transition:width 1.4s cubic-bezier(.65,0,.35,1)}
 .net.cond{width:240px}
 .net .ln{fill:none;stroke:#b9b6ac;stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .7s ease forwards}
@@ -57,17 +40,44 @@ ol.stm li:before{content:counter(s);position:absolute;left:0;top:14px;color:#6b6
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes pop{to{transform:scale(1)}}
 @keyframes beat{0%,100%{transform:scale(1)}18%{transform:scale(1.35)}36%{transform:scale(1)}}
+
+/* Chat */
+#top{position:fixed;top:4px;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:center;background:#f7f5f0;border-bottom:1px solid #e4e0d7;z-index:5;font-size:16px;font-weight:600}
+#back{position:absolute;left:10px;background:none;border:0;font:inherit;font-weight:400;color:#6b6b66;cursor:pointer;padding:8px}
+#back:hover{color:#161616}
+#chat{max-width:760px;margin:0 auto;padding:80px 20px 200px;display:flex;flex-direction:column;gap:10px}
+.m{width:fit-content;max-width:92%;padding:14px 18px;border-radius:14px;line-height:1.45;animation:in .22s ease}
+.bot{background:#fff;border:1px solid #dcd8cf;border-bottom-left-radius:4px;font-size:clamp(18px,2.4vw,21px);color:#3d3d3a}
+.bot.q{font-size:clamp(26px,5vw,40px);font-weight:600;line-height:1.15;letter-spacing:-.015em;color:#161616;padding:18px 22px}
+.bot.hd{background:none;border:0;padding:10px 0 0;margin-top:14px;font-size:15px;color:#6b6b66}
+.me{align-self:flex-end;background:#161616;color:#fff;border-bottom-right-radius:4px;font-size:22px}
+.dots i{display:inline-block;width:8px;height:8px;margin:0 3px;border-radius:50%;background:#9b9890;animation:bl 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}
+.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+#dock{position:fixed;left:0;right:0;bottom:0;padding:28px 20px calc(20px + env(safe-area-inset-bottom));background:linear-gradient(rgba(247,245,240,0),#f7f5f0 28%);z-index:4}
+#dock>div{max-width:760px;margin:0 auto;animation:in .22s ease}
+.choices{display:flex;gap:10px}
+.choice{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;font:inherit;font-size:22px;padding:16px 10px;background:#fff;color:#161616;border:1.5px solid #161616;border-radius:10px;cursor:pointer}
+.choice:hover{background:#ece9e1}
+.choice.sel{background:#161616;color:#fff}
+.key{font-size:13px;border:1px solid currentColor;border-radius:3px;padding:1px 6px;opacity:.7}
+.in{display:flex;gap:10px}
+.in input{flex:1;min-width:0;font:inherit;font-size:22px;padding:12px 16px;border:1.5px solid #161616;border-radius:10px;background:#fff;color:#161616;outline:none}
 @media(prefers-reduced-motion:reduce){
   .net,.net .mv,.net.cond .ln,.net.cond .ring{transition:none}
   .net .ln{animation:none;stroke-dashoffset:0}
   .net .nd{animation:none;transform:none}
+  .dots i{animation:none}
 }
 </style>
 </head>
 <body>
 <div id="bar"><div id="fill"></div></div>
+<header id="top" hidden><button id="back" type="button" hidden>&larr; Back</button>Personality Deducer</header>
 <main id="app" class="wrap"></main>
-<button id="back" type="button" hidden>&larr; Back</button>
+<div id="chat" hidden></div>
+<div id="dock"></div>
 <script src="config.js"></script>
 <script>
 const SECTIONS=[{"id": "A", "header": "Hobbies, sports, and other activities that would interest your ideal person.", "items": [[7, "Go fishing"], [9, "Play golf"], [12, "Duel with swords"], [13, "Ice skate"], [14, "Climb mountains"], [15, "Play ping-pong"], [20, "Play volley ball"], [28, "Advise people"], [31, "Play chess"], [32, "Paint pictures"], [34, "Keep a diary"], [38, "Entertain at home"], [39, "Go to a stag party"], [40, "Play poker"], [44, "Model clay"], [48, "Collect stamps or coins"], [51, "Date girls often"], [56, "Have nails manicured"], [59, "Drink beer with friends"], [60, "Visit jam sessions"], [64, "Save money"], [67, "Be married"], [68, "Prefer simple foods"], [69, "Have children"], [71, "Get massage treatments"], [72, "Be seen in the best spots"], [73, "Sketch pictures"], [75, "Go to political meetings"], [79, "Find foreign cafes"], [80, "Polish shoes regularly"], [81, "Tell jokes"], [85, "Make a parachute jump"]]}, {"id": "B", "header": "Personal characteristics of your ideal person.", "items": [[6, "Very masculine"], [9, "Wears glasses"], [11, "Artistic"], [13, "Famous"], [17, "Non-smoker"], [22, "Serious"], [23, "Seeks others' advice"], [29, "Practical"], [30, "Overlooks others' faults"], [31, "Wealthy"], [34, "Controls his anger"], [37, "Well-educated"], [39, "Carefully-dressed"], [42, "Attractive to women"], [43, "Practical joker"], [49, "Dislikes church"], [51, "Stays in the background"], [52, "Knows many sexy jokes"], [56, "Owns a flashy car"], [59, "Has a smooth line"], [62, "Helps in the home"], [63, "Hides his feelings"], [64, "Ready to take a chance"], [66, "Refuses to admit defeat"], [68, "Uninterested in women"]]}, {"id": "C", "header": "Reading interests of your ideal person.", "items": [[2, "Poetry"], [4, "Love stories"], [5, "Mechanics magazines"], [7, "Sports stories"], [10, "Religious books"], [11, "Comic books"], [14, "Books on self-improvement"], [18, "Astrology, horoscopes"]]}, {"id": "D", "header": "Occupational interests of your ideal person.", "items": [[1, "Write books"], [4, "Operate a machine"], [5, "Supervise others"], [7, "Wait on people"], [9, "Settle arguments"], [11, "Write poetry"], [12, "Manage a retail store"], [17, "Capture criminals"], [19, "Grow flowers"], [23, "Referee sports"], [24, "Sell to the public"], [27, "Work under supervision"], [28, "Work in a fixed locality"], [31, "Have little responsibility"], [33, "Develop original ideas"], [35, "Write reports"], [37, "Routine work"], [40, "Office or desk work"], [44, "Fixed salary"], [49, "Make own decisions"], [54, "Outside work"], [57, "Heavy work"], [61, "Judge people"], [63, "Figure costs and prices"], [71, "Plan procedures"], [74, "Take business risks"]]}, {"id": "E", "header": "Secret hopes and ambitions of your ideal person.", "items": [[1, "Be a hero"], [2, "Win the Irish sweepstakes"], [5, "Marry a movie star"], [9, "Turn lead to gold"], [11, "Become president"], [12, "Be a genius"], [16, "Live forever"], [24, "Be worshipped by savages"], [25, "Relive the same life"]]}];
@@ -77,11 +87,12 @@ const INSTR=[
  "Select <i>only one</i> word or letter for each characteristic. Do not skip any characteristics."
 ];
 
-const $=s=>document.querySelector(s);
-function setBar(p){$("#fill").style.width=Math.max(0,Math.min(100,p*100))+"%";}
+const $=s=>document.querySelector(s), chat=$("#chat"), dock=$("#dock");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const down=()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
 
-/* Builds the animated network: nodes pop in layer by layer, links draw between layers,
-   then a pulse of activity keeps travelling left to right into the output node. */
+/* Welcome-screen network: forms, pulses, then condenses into a small radial mark */
 function netSVG(){
   const L=[6,4,3,1], X=[36,196,356,516], H=260, STEP=.5;
   const CX=130, CY=H/2, R=[108,76,44,0], OFF=[-90,-45,-90,0];
@@ -107,7 +118,7 @@ let netTimer;
 function startNet(){
   clearTimeout(netTimer);
   const svg=$(".net"); if(!svg)return;
-  if(matchMedia("(prefers-reduced-motion:reduce)").matches){svg.classList.add("cond");return;}
+  if(RM){svg.classList.add("cond");return;}
   netTimer=setTimeout(()=>svg.classList.add("cond"),5000);
 }
 async function post(payload){
@@ -137,95 +148,150 @@ const TOTAL=steps.filter(s=>s.t==="item").length;
 const LS="pd_state_v2";
 let state={i:0,answers:{},code:"",submitted:false};
 try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s&&s.i<steps.length)state=s;}catch(e){}
-let sending=false;
 function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
-let locked=false;
+function setBar(){$("#fill").style.width=Math.min(100,Object.keys(state.answers).length/TOTAL*100)+"%";}
 
-function render(){
-  clearTimeout(netTimer);
-  const s=steps[state.i], app=$("#app");
-  $("#back").hidden=!(s.t==="item"||s.t==="instr");
-  setBar(Object.keys(state.answers).length/TOTAL);
-  if(s.t==="welcome"){
-    app.innerHTML=`<div class="screen">${netSVG()}<p class="tag"><b>AI-powered</b> personality questionnaire</p><h1>Personality Deducer</h1>
-    <p class="sub">Answer a series of quick questions about your ideal person. Our AI analyzes your answers and writes your personal personality profile.</p>
-    <p class="sub">It takes about 5 minutes.</p>
-    <div class="row"><button class="btn" id="go">Start</button><span class="hint">press Enter</span></div>
-    <p class="small">Your responses are recorded for a class research project.</p></div>`;
-    $("#go").onclick=next; startNet();
-  }else if(s.t==="code"){
-    app.innerHTML=`<div class="screen"><p class="label">Before we begin</p><h2 class="q">Enter your access code</h2>
-    <input type="text" id="cd" placeholder="Access code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${state.code||""}">
-    <div class="err" id="err"></div>
-    <div class="row"><button class="btn" id="go">Continue</button><span class="hint">press Enter</span></div></div>`;
-    $("#go").onclick=submitCode; setTimeout(()=>$("#cd").focus(),50);
-  }else if(s.t==="instr"){
-    app.innerHTML=`<div class="screen"><p class="label">Instructions</p>${INSTR.map(p=>`<p class="sub">${p}</p>`).join("")}
-    <div class="row"><button class="btn" id="go">Continue</button><span class="hint">press Enter</span></div></div>`;
-    $("#go").onclick=next;
-  }else if(s.t==="item"){
-    const a=state.answers[s.key];
-    app.innerHTML=`<div class="screen"><p class="label">${s.sec.id}. ${s.sec.header}</p><h2 class="q">${s.text}</h2>
-    <div class="choices">${[["Yes","Y"],["U","U"],["No","N"]].map(([v,k])=>`<button class="choice${a===v?" sel":""}" data-v="${v}"><span class="key">${k}</span>${v}</button>`).join("")}</div></div>`;
-    app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
-  }else if(!state.submitted){
-    app.innerHTML=`<div class="screen"><h1>Submitting your answers&hellip;</h1>
-    <div class="err" id="err"></div>
-    <div class="row"><button class="btn" id="go" hidden>Try again</button></div></div>`;
-    $("#go").onclick=submit; submit();
-  }else{
-    app.innerHTML=`<div class="screen"><h1>Thank you.</h1>
-    <p class="sub">Our AI is analyzing your answers. When everyone is finished, you'll be given a code to unlock your personality profile.</p>
-    <input type="text" id="rc" placeholder="Results code" autocomplete="off" autocapitalize="characters" spellcheck="false">
-    <div class="err" id="err"></div>
-    <div class="row"><button class="btn" id="go">See my results</button><span class="hint">press Enter</span></div></div>`;
-    $("#go").onclick=unlock; setTimeout(()=>$("#rc").focus(),50);
+let ready=false, runId=0;
+
+/* What the bot says at each step, and what the person's reply looks like in the chat */
+function msgs(i){
+  const s=steps[i], p=steps[i-1];
+  if(s.t==="code")return[{h:"Before we begin, please enter your access code.",c:""}];
+  if(s.t==="instr")return[{h:"Instructions",c:"hd"},...INSTR.map(h=>({h,c:""}))];
+  if(s.t==="item"){
+    const r=[];
+    if(p.t!=="item"||p.sec!==s.sec)r.push({h:s.sec.id+". "+s.sec.header,c:"hd"});
+    r.push({h:s.text,c:"q"}); return r;
   }
+  return[{h:state.submitted?"Thank you. Our AI is analyzing your answers. When everyone is finished, you\u2019ll be given a code to unlock your personality profile.":"That\u2019s all "+TOTAL+" questions. Submitting your answers\u2026",c:""}];
 }
-function next(){if(state.i<steps.length-1){state.i++;save();render();window.scrollTo(0,0);}}
-function back(){if(state.i>0){state.i--;save();render();}}
-async function submitCode(){
-  const v=$("#cd").value.trim().toUpperCase(); if(!v){$("#err").textContent="Please enter your access code.";return;}
-  $("#go").disabled=true;
-  try{
-    if(await codeIsValid(v,"codes.txt")){state.code=v;next();return;}
-    $("#err").textContent="That code isn't valid. Please check the code you were given.";
-  }catch(e){$("#err").textContent="Couldn't check your code. Please check your connection and try again.";}
-  $("#go").disabled=false;
+function utext(i){
+  const s=steps[i];
+  return s.t==="code"?"\u2022".repeat(state.code.length):s.t==="instr"?"I\u2019m ready":s.t==="item"?state.answers[s.key]:"";
+}
+function bubble(c,h){const d=document.createElement("div");d.className="m "+c;d.innerHTML=h;chat.appendChild(d);return d;}
+
+/* Typing dots, then the message types itself out. Returns false if the chat was reset meanwhile. */
+async function botSay(h,c,id){
+  const d=bubble("bot "+c,'<span class="dots"><i></i><i></i><i></i></span>'); down();
+  if(!RM){await sleep(450); if(id!==runId)return false;}
+  const p=h.replace(/<[^>]+>/g,""), a=document.createElement("span"), b=document.createElement("span");
+  b.style.visibility="hidden"; d.textContent=""; d.append(a,b);
+  if(!RM){
+    const n=p.length, per=Math.max(1,Math.ceil(n/Math.min(n*1.2,80)));
+    for(let k=0;k<n;k+=per){a.textContent=p.slice(0,k);b.textContent=p.slice(k);await sleep(20);if(id!==runId)return false;}
+  }
+  d.innerHTML=h; down(); return true;
+}
+function syncBack(){$("#back").hidden=!["item","instr"].includes(steps[state.i].t);}
+
+async function present(){
+  const id=++runId; ready=false; dock.innerHTML=""; syncBack();
+  for(const m of msgs(state.i)){if(!await botSay(m.h,m.c,id))return;}
+  if(steps[state.i].t==="done"&&!state.submitted)submit(id); else showDock();
+}
+function showDock(){
+  const s=steps[state.i]; ready=true; syncBack(); let h="";
+  if(s.t==="item"){
+    const a=state.answers[s.key];
+    h=`<div class="choices">${[["Yes","Y"],["U","U"],["No","N"]].map(([v,k])=>`<button class="choice${a===v?" sel":""}" data-v="${v}"><span class="key">${k}</span>${v}</button>`).join("")}</div>`;
+  }else if(s.t==="instr"){
+    h=`<div class="row"><button class="btn" id="go">I\u2019m ready</button><span class="hint">press Enter</span></div>`;
+  }else{
+    const c=s.t==="code";
+    h=`<div class="in"><input type="text" id="tx" placeholder="${c?"Access code":"Results code"}" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${c?state.code||"":""}"><button class="btn" id="go">${c?"Continue":"See my results"}</button></div><div class="err" id="err"></div>`;
+  }
+  dock.innerHTML=`<div>${h}</div>`;
+  dock.querySelectorAll(".choice").forEach(b=>b.onclick=()=>choose(b.dataset.v));
+  const g=$("#go"); if(g)g.onclick=s.t==="code"?submitCode:s.t==="done"?unlock:()=>advance("I\u2019m ready");
+  const t=$("#tx"); if(t)setTimeout(()=>t.focus(),50);
+  down();
+}
+function advance(u){
+  if(!ready)return; ready=false;
+  if(u)bubble("me",u);
+  dock.innerHTML=""; state.i++; save(); setBar(); down(); present();
 }
 function choose(v){
-  if(locked)return; locked=true;
-  const s=steps[state.i]; state.answers[s.key]=v; save();
-  document.querySelectorAll(".choice").forEach(b=>b.classList.toggle("sel",b.dataset.v===v));
-  setBar(Object.keys(state.answers).length/TOTAL);
-  setTimeout(()=>{locked=false;next();},180);
+  if(!ready)return;
+  state.answers[steps[state.i].key]=v; advance(v);
 }
-async function submit(){
-  if(sending)return; sending=true; $("#go").hidden=true; $("#err").textContent="";
+/* Redraws the whole conversation instantly (used on reload and for Back) */
+function rebuild(){
+  const id=++runId; chat.innerHTML=""; dock.innerHTML=""; ready=false; setBar();
+  for(let k=1;k<=state.i;k++){
+    msgs(k).forEach(m=>bubble("bot "+m.c,m.h));
+    if(k<state.i){const u=utext(k); if(u)bubble("me",u);}
+  }
+  syncBack();
+  if(steps[state.i].t==="done"&&!state.submitted)submit(id); else showDock();
+  window.scrollTo(0,document.documentElement.scrollHeight);
+}
+function back(){
+  if(!["item","instr"].includes(steps[state.i].t))return;
+  state.i--; save(); rebuild();
+}
+async function submitCode(){
+  const t=$("#tx"); if(!ready||!t)return;
+  const v=t.value.trim().toUpperCase(), e=$("#err");
+  if(!v){e.textContent="Please enter your access code.";return;}
+  $("#go").disabled=true;
+  try{
+    if(await codeIsValid(v,"codes.txt")){state.code=v;advance("\u2022".repeat(v.length));return;}
+    e.textContent="That code isn\u2019t valid. Please check the code you were given.";
+  }catch(x){e.textContent="Couldn\u2019t check your code. Please check your connection and try again.";}
+  $("#go").disabled=false;
+}
+async function submit(id){
   const payload=Object.assign({type:"questionnaire",code:state.code,condition:CONFIG.CONDITION,email:"",questionnaire_submitted_at:new Date().toISOString()},state.answers);
-  const ok=await post(payload); sending=false;
-  if(!ok){$("#go").hidden=false;$("#err").textContent="Something went wrong. Please check your connection and try again.";return;}
-  state.submitted=true; save(); render();
+  const ok=await post(payload); if(id!==runId)return;
+  if(!ok){
+    bubble("bot","Something went wrong. Please check your connection and try again.");
+    dock.innerHTML='<div class="row"><button class="btn" id="go">Try again</button></div>';
+    ready=true; $("#go").onclick=rebuild; down(); return;
+  }
+  state.submitted=true; save(); present();
 }
 async function unlock(){
-  const v=$("#rc").value.trim().toUpperCase(); if(!v){$("#err").textContent="Please enter the results code.";return;}
+  const t=$("#tx"); if(!ready||!t)return;
+  const v=t.value.trim().toUpperCase(), e=$("#err");
+  if(!v){e.textContent="Please enter the results code.";return;}
   $("#go").disabled=true;
   try{
     if(await codeIsValid(v,"results-codes.txt")){
-      try{localStorage.removeItem(LS);}catch(e){}
+      try{localStorage.removeItem(LS);}catch(x){}
       location.href="results/?code="+encodeURIComponent(state.code); return;
     }
-    $("#err").textContent="That code isn't valid. Wait for the code to be announced, then try again.";
-  }catch(e){$("#err").textContent="Couldn't check the code. Please check your connection and try again.";}
+    e.textContent="That code isn\u2019t valid. Wait for the code to be announced, then try again.";
+  }catch(x){e.textContent="Couldn\u2019t check the code. Please check your connection and try again.";}
   $("#go").disabled=false;
 }
+
+function welcome(){
+  ready=true;
+  $("#app").innerHTML=`<div class="screen">${netSVG()}<p class="tag"><b>AI-powered</b> personality questionnaire</p><h1>Personality Deducer</h1>
+  <p class="sub">Chat with our AI and answer a series of quick questions about your ideal person. It analyzes your answers and writes your personal personality profile.</p>
+  <p class="sub">It takes about 5 minutes.</p>
+  <div class="row"><button class="btn" id="go">Start</button><span class="hint">press Enter</span></div>
+  <p class="small">Your responses are recorded for a class research project.</p></div>`;
+  $("#go").onclick=()=>{clearTimeout(netTimer);openChat();state.i=1;save();present();};
+  startNet();
+}
+function openChat(){$("#app").hidden=true;$("#top").hidden=false;chat.hidden=false;window.scrollTo(0,0);}
+
 document.addEventListener("keydown",e=>{
-  const s=steps[state.i]; if(e.metaKey||e.ctrlKey||e.altKey)return;
-  if(s.t==="item"){const m={y:"Yes",u:"U",n:"No"}[e.key.toLowerCase()];if(m)choose(m);if(e.key==="ArrowLeft")back();}
-  else if(e.key==="Enter"){if(s.t==="done"&&state.submitted)unlock();else if(s.t==="code")submitCode();else if(s.t==="welcome"||s.t==="instr")next();}
+  if(e.metaKey||e.ctrlKey||e.altKey||!ready)return;
+  const s=steps[state.i];
+  if(s.t==="item"){
+    const m={y:"Yes",u:"U",n:"No"}[e.key.toLowerCase()]; if(m)choose(m);
+    if(e.key==="ArrowLeft")back();
+  }else if(e.key==="Enter"){
+    const g=$("#go"); if(g&&!g.disabled){e.preventDefault();g.click();}
+  }
 });
 $("#back").onclick=back;
-render();
+setBar();
+if(state.i===0)welcome(); else{openChat();rebuild();}
 </script>
 </body>
 </html>
